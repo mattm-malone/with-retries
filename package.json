@@ -4,11 +4,20 @@
   "description": "with-retries is a utility for retrying promises upon failure",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=12.x"
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "grunt",
+    "clean": "rm -rf dist",
+    "prebuild": "yarn clean",
     "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules . --ext .js,.ts --cache",
     "lint:fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules  . --ext .js,.ts --fix --cache",
-    "test": "jest"
+    "test": "jest",
+    "version": "auto-changelog -p && git add CHANGELOG.md",
+    "prepush": "yarn lint && yarn test",
+    "prepublishOnly": "yarn prepush && yarn build",
+    "publish-package": "yarn publish dist"
   },
   "repository": {
     "type": "git",
@@ -33,6 +42,7 @@
     "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
+    "auto-changelog": "^2.2.1",
     "eslint": "^7.25.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.22.1",
