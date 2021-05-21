@@ -12,7 +12,7 @@ module.exports = function (grunt) {
     copy: {
       main: {
         expand: true,
-        src: ['*.md', 'LICENSE'],
+        src: ['*.md', 'LICENSE', 'package.json'],
         dest: 'dist/',
       },
     },
