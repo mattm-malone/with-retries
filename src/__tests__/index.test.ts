@@ -40,42 +40,7 @@ describe('withRetries', () => {
     expect(scope.func.apply).toHaveBeenCalledWith(undefined, []);
   });
 
-  describe('when the provided function is NOT asynchronous', () => {
-    it('should call the provided function with the provided args', async () => {
-      await withRetries(mockFunc)('hello', 1, true);
-
-      expect(mockFunc).toHaveBeenCalledTimes(1);
-      expect(mockFunc).toHaveBeenCalledWith('hello', 1, true);
-    });
-
-    it('should return the result of the provided function', async () =>
-      expect(await withRetries(mockFunc)('hello')).toEqual('there'));
-
-    describe('when the provided function continuously fails', () => {
-      beforeEach(() => {
-        mockFunc.mockImplementation(() => {
-          throw new Error('error :(');
-        });
-      });
-
-      it('should call the function the default number of retries', async () =>
-        await withRetries(mockFunc)().catch(() => {
-          expect(mockFunc).toHaveBeenCalledTimes(3);
-        }));
-
-      it('should wait the default of 500ms between each call', async () =>
-        withRetries(mockFunc)().catch(() => {
-          expect(mockedSleep).toHaveBeenCalledTimes(2);
-          expect(mockedSleep).toHaveBeenCalledWith(500);
-        }));
-    });
-  });
-
-  describe('when the provided function is asynchronous', () => {
-    beforeEach(() => {
-      mockFunc.mockImplementation(async () => 'there');
-    });
-
+  describe('invoking the function', () => {
     it('should call the provided function with the provided args', async () => {
       await withRetries(mockFunc)('hello', 1, true);
 

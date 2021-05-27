@@ -1,14 +1,5 @@
 module.exports = function (grunt) {
   grunt.initConfig({
-    clean: ['./dist'],
-    ts: {
-      default: {
-        tsconfig: {
-          tsconfig: './tsconfig.json',
-          passThrough: true,
-        },
-      },
-    },
     copy: {
       main: {
         expand: true,
@@ -19,8 +10,7 @@ module.exports = function (grunt) {
   });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-ts');
   grunt.loadNpmTasks('grunt-contrib-copy');
 
-  grunt.registerTask('default', ['clean', 'ts', 'copy']);
+  grunt.registerTask('default', ['copy']);
 };

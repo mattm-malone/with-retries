@@ -1,12 +1,8 @@
 {
+  "extends": "./tsconfig-base.json",
   "compilerOptions": {
-    "declaration": true,
-    "module": "commonjs",
-    "outDir": "./dist/",
-    "rootDir": "./src/",
-    "strict": true,
-    "target": "es5",
+    "module": "esnext", // TODO this isnt working. SyntaxError: Cannot use import statement outside a module
+    "outDir": "dist/esm",
+    "target": "esnext"
   },
-  "include": ["./src/**/*"],
-  "exclude": ["node_modules", "./**/*.test.ts"]
 }
