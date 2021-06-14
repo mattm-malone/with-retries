@@ -1,6 +1,6 @@
 {
   "name": "with-retries",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "with-retries is a utility for retrying promises upon failure",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -23,7 +23,7 @@
     "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules . --ext .js,.ts --cache",
     "lint:fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules  . --ext .js,.ts --fix --cache",
     "test": "jest",
-    "version": "auto-changelog -p && git add CHANGELOG.md",
+    "version": "auto-changelog -p -l 10 -b 10 && git add CHANGELOG.md",
     "prepush": "yarn lint && yarn test",
     "prepublishOnly": "yarn prepush && yarn build",
     "publish-package": "yarn publish dist"
