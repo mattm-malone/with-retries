@@ -1,5 +1,5 @@
 import RetryOptions from './types/options';
-import sleep from './utils/sleep.js';
+import sleep from './utils/sleep';
 
 export default function withRetries<T>(
   func: (...params: any[]) => T,

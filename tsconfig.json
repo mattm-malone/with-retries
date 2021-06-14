@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig-base.json",
   "compilerOptions": {
-    "module": "esnext", // TODO this isnt working. SyntaxError: Cannot use import statement outside a module
+    "module": "esnext",
     "outDir": "dist/esm",
     "target": "esnext"
   },
