@@ -53,7 +53,7 @@ describe('withRetries', () => {
         });
       });
 
-      it('should call the function the default number of retries', async () =>
+      it('should call the function the default number of attempts', async () =>
         await withRetries(mockFunc)().catch(() => {
           expect(mockFunc).toHaveBeenCalledTimes(3);
         }));

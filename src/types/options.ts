@@ -4,11 +4,11 @@ export default interface options {
    */
   scope?: unknown;
   /**
-   * How many times to retry function
+   * How many times to attempt function
    */
-  maxRetries?: number;
+  attempts?: number;
   /**
-   * Time in ms to delay each invokation
+   * Time in ms to delay each invocation
    */
   delay?: number;
 }
