@@ -24,9 +24,7 @@
     "lint:fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules  . --ext .js,.ts --fix --cache",
     "test": "jest",
     "version": "auto-changelog -p -l 10 -b 10 && git add CHANGELOG.md",
-    "prepush": "yarn lint && yarn test",
-    "prepublishOnly": "yarn prepush && yarn build",
-    "publish-package": "yarn publish dist"
+    "publish-package": "yarn publish ./dist"
   },
   "repository": {
     "type": "git",
@@ -46,7 +44,7 @@
   "bugs": {
     "url": "https://github.com/mattm-malone/with-retries/issues"
   },
-  "homepage": "https://github.com/mattm-malone/with-retries#readme",
+  "homepage": "https://github.com/mattm-malone/with-retries",
   "devDependencies": {
     "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
