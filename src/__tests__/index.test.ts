@@ -1,15 +1,10 @@
 import withRetries from '../index';
-import sleep from '../utils/sleep';
-
-jest.mock('../utils/sleep');
 
 describe('withRetries', () => {
   const mockFunc = jest.fn();
-  const mockedSleep = sleep as jest.Mocked<typeof sleep>;
 
   beforeEach(() => {
     mockFunc.mockReturnValue('there');
-    (mockedSleep as jest.Mock).mockImplementation(async () => 'i sleep');
   });
 
   afterEach(() => {
@@ -61,12 +56,6 @@ describe('withRetries', () => {
       it('should call the function the default number of retries', async () =>
         await withRetries(mockFunc)().catch(() => {
           expect(mockFunc).toHaveBeenCalledTimes(3);
-        }));
-
-      it('should wait the default of 500ms between each call', async () =>
-        withRetries(mockFunc)().catch(() => {
-          expect(mockedSleep).toHaveBeenCalledTimes(2);
-          expect(mockedSleep).toHaveBeenCalledWith(500);
         }));
     });
   });

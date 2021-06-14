@@ -1,5 +1,8 @@
 import RetryOptions from './types/options';
-import sleep from './utils/sleep';
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export default function withRetries<T>(
   func: (...params: any[]) => T,
@@ -16,7 +19,6 @@ export default function withRetries<T>(
     for (let i = 0; i < maxRetries; i++) {
       try {
         const funcResult = func.apply(scope, args);
-        // if (!resultingFunction || !resultingFunction.then) return resultingFunction;
         return funcResult;
       } catch (err) {
         if (i < maxRetries - 1) await sleep(delay);
