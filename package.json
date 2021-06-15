@@ -18,12 +18,12 @@
     "build-cjs": "tsc -p tsconfig-cjs.json",
     "build-esm": "tsc -p tsconfig.json",
     "build": "grunt && yarn build-cjs && yarn build-esm && ./fixup.sh",
-    "clean": "rm -rf dist",
+    "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules . --ext .js,.ts --cache",
     "lint:fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules  . --ext .js,.ts --fix --cache",
     "test": "jest",
-    "version": "auto-changelog -p -l 10 -b 10 && git add CHANGELOG.md",
+    "version": "auto-changelog -p && git add CHANGELOG.md",
     "publish-package": "yarn publish ./dist"
   },
   "repository": {
@@ -49,20 +49,25 @@
     "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",
-    "auto-changelog": "^2.2.1",
+    "auto-changelog": "*",
     "eslint": "^7.28.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.22.4",
     "eslint-plugin-jest": "^24.3.6",
     "eslint-plugin-prettier": "^3.4.0",
     "grunt": "^1.4.0",
-    "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-copy": "^1.0.0",
     "jest": "^27.0.4",
     "jest-extended": "^0.11.5",
     "jest-junit": "^12.2.0",
     "prettier": "^2.3.1",
+    "rimraf": "^3.0.2",
     "ts-jest": "^27.0.3",
     "typescript": "^4.2.4"
+  },
+  "auto-changelog": {
+    "backfillLimit": false,
+    "commitLimit": false,
+    "package": true
   }
 }

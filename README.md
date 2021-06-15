@@ -34,9 +34,10 @@ rejects, `with-retries` will attempt to invoke the function again.
 The following describes what the available options are:
 | Property | Description | Type | Default |
 |----------|-------------|------|---------|
-| scope | The value to use as `this` when invoking `func`. | object | `undefined` |
-| attempts | How many times to attempt function upon failure. | number | `3` |
-| delay | Time in milliseconds to delay each re-invocation. | number | `500` |
+| scope | The value to use as `this` when invoking `func`. | `object` | `undefined` |
+| maxAttempts | How many times to attempt function upon failure. | `number` | `3` |
+| delay | Time in milliseconds to delay each re-invocation. | `number` | `500` |
+| when | Function that determines whether to retry or not. | `(result: any) => boolean` | `undefined` |
 
 #### Return Value
 Asynchronous function that:
@@ -97,7 +98,7 @@ const result = await withRetries(partiallyFailingFunc)()
 
 ### Applying scope to class function:
 If the provided `func` refers to `this` in a class, you will need to pass the scope/class into the `scope` param of the options.
-Consider the following two snippets (using promise syntax instead of await) :
+Consider the following two snippets (using promise syntax instead of async await) :
 ```javascript
 class Api {
   constructor(baseUrl) {
@@ -126,10 +127,39 @@ getWithRetriesWRONG()
 ```
 Without the scope, `this.baseUrl` will be undefined, and the method will fail.
 
+### Conditional Retry
+If you want to retry the function not just on an error, but on a certain condition, you can do so by passing in a `when` function.
+
+For example, you may want to `fetch` if the response doesn't contain what you want, or has a certain status code.
+```javascript
+const fetchWithRetries = withRetries(fetch, { when: (resp) => !resp.ok }); // Retry when response is NOT ok (not 200/300)
+await fetchWithRetries('https://httpbin.org/status/503');
+// at 0ms:    attempt: 1
+// at 500ms:  attempt: 2
+// at 1000ms: attempt: 3
+// ...UnhandledPromiseRejectionWarning: Error: Failed given conditon
+```
+
+You can also do this with synchronous functions. For example, retry when function result is less than three:
+```javascript
+const lessThanThree = (res: number) => res < 3;
+let iter = 0;
+const func = () => {
+  console.count('attempt');
+  iter++;
+  return iter;
+}
+await withRetries(func, { when: lessThanThree })();
+// at 0ms:    attempt: 1
+// at 500ms:  attempt: 2
+// at 1000ms: attempt: 3 Returns 3
+```
+
+NOTE: withRetries will still retry on a rejected promise or exception, regardless of whether `when` was passed in or not.
 
 ## Coming soon:
 * Exponential backoff
-  * This will be the default retry logic. Exponential backoff helps prevent network congestion.
-* Optional error condition method
-  * Pass in method that determines whether the result of `func` is a failure or not. This will make the use of this module much more versatile.
+  * This will be the default retry logic on promises/async functions. Exponential backoff helps prevent network congestion.
+* Optional error handler
+  * If you don't want to throw an error, or you do but want a custom error, you can pass in an `errorHandler` function to handle custom handling.
   
