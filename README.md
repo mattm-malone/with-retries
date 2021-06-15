@@ -48,13 +48,13 @@ Asynchronous function that:
 ```javascript
 import withRetries from 'with-retries'
 const powerWithRetry = withRetries(Math.pow);
-const twoSquared = powerWithRetry(2, 2);
+const twoSquared = await powerWithRetry(2, 2);
 // 4
 ```
 Or more simply, combine the construction of retry-function and invocation:
 ```javascript
 import withRetries from 'with-retries'
-const twoSquared = withRetries(Math.pow)(2, 2);
+const twoSquared = await withRetries(Math.pow)(2, 2);
 // 4
 ```
 Because `Math.pow` never threw an error or rejected, the result is simply returned, without any retries.
