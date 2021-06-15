@@ -53,10 +53,19 @@ describe('withRetries', () => {
         });
       });
 
-      it('should call the function the default number of attempts', async () =>
+      it('should call the function the default number of maxAttempts', async () =>
         await withRetries(mockFunc)().catch(() => {
           expect(mockFunc).toHaveBeenCalledTimes(3);
         }));
+    });
+
+    describe('when fail conditon is given', () => {
+      it('should retry until condition is false', async () => {
+        const condition = (res: number) => res < 1;
+        mockFunc.mockReturnValueOnce(0).mockReturnValueOnce(1);
+        await withRetries(mockFunc, { when: condition })();
+        expect(mockFunc).toHaveBeenCalledTimes(2);
+      });
     });
   });
 });

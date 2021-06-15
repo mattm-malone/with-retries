@@ -35,7 +35,7 @@ The following describes what the available options are:
 | Property | Description | Type | Default |
 |----------|-------------|------|---------|
 | scope | The value to use as `this` when invoking `func`. | object | `undefined` |
-| attempts | How many times to attempt function upon failure. | number | `3` |
+| maxAttempts | How many times to attempt function upon failure. | number | `3` |
 | delay | Time in milliseconds to delay each re-invocation. | number | `500` |
 
 #### Return Value
