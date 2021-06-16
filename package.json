@@ -5,6 +5,7 @@
   "main": "cjs/index.js",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./esm/index.js",
@@ -68,6 +69,7 @@
   "auto-changelog": {
     "backfillLimit": false,
     "commitLimit": false,
-    "package": true
+    "package": true,
+    "template": "changelog-template.hbs"
   }
 }
