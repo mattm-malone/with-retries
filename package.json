@@ -1,6 +1,6 @@
 {
   "name": "with-retries",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "with-retries is a utility for retrying promises upon failure",
   "main": "cjs/index.js",
   "module": "esm/index.js",
