@@ -3,17 +3,21 @@
  */
 interface RetryOptions {
   /**
-   * The value to use as `this` when calling a given function.
+   * Time in milliseconds to delay each re-invocation.
    */
-  scope?: any;
+  delay?: number;
+  /**
+   * Function to handle caught error on failure.
+   */
+  errorHandler?: (error: Error) => any;
   /**
    * How many times to attempt function upon failure.
    */
   maxAttempts?: number;
   /**
-   * Time in milliseconds to delay each re-invocation.
+   * The value to use as `this` when calling a given function.
    */
-  delay?: number;
+  scope?: any;
   /**
    * If function returns true, it will retry again (after the specified delay).
    * else, return result.
@@ -33,9 +37,10 @@ function sleep(ms: number) {
  *
  * @param {function(...args:*):boolean} func - The function to invoke.
  * @param {Object} [options] - Options used to configure how `func` is retried and invoked.
- * @param {object} [options.scope] - The value to use as `this` when calling `func`.
- * @param {number} [options.maxAttempts=3] - How many times to attempt function upon failure.
  * @param {number} [options.delay=500] - Time in milliseconds to delay each re-invocation.
+ * @param {function(error:*):*} [options.errorHandler] - Function to handle error.
+ * @param {number} [options.maxAttempts=3] - How many times to attempt function upon failure.
+ * @param {object} [options.scope] - The value to use as `this` when calling `func`.
  * @param {function(result:*):boolean} [options.when] - Function that determines whether to retry or not.
  *
  * @returns Returns async function that, when invoked, will invoke the given func.
@@ -44,7 +49,7 @@ export default function withRetries<T>(
   func: (...args: any[]) => Promise<T> | T,
   options: RetryOptions = {}
 ): (...args: any[]) => Promise<T | undefined> {
-  const { delay = 500, maxAttempts = 3, scope, when } = options;
+  const { delay = 500, errorHandler, maxAttempts = 3, scope, when } = options;
   return async function retry(...args: any[]): Promise<T | undefined> {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -53,7 +58,10 @@ export default function withRetries<T>(
         return funcResult;
       } catch (err) {
         if (attempt <= maxAttempts - 1) await sleep(delay);
-        else throw err;
+        else {
+          if (errorHandler) errorHandler(err);
+          else throw err;
+        }
       }
     }
   };
