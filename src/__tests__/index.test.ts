@@ -34,73 +34,124 @@ describe('withRetries', () => {
         });
       });
 
-      it('should call the function the default number of maxAttempts', async () =>
+      it('should call the function the default number of maxAttempts', async () => {
         await withRetries(mockFunc)().catch(() => {
-          expect(mockFunc).toHaveBeenCalledTimes(3);
-        }));
+          expect(mockFunc).toHaveBeenCalledTimes(5);
+        });
+      });
 
-      it('should call setTimeout', async () => {
+      it('should call setTimeout with the default delay', async () => {
         const timeoutSpy = jest.spyOn(global, 'setTimeout');
-        await withRetries(mockFunc)().catch(() => {
-          expect(timeoutSpy).toHaveBeenCalledTimes(2);
-          expect(timeoutSpy).toHaveBeenCalledWith(expect.anything(), 500);
+        await withRetries(mockFunc, { delay: { jitter: false } })().catch(() => {
+          expect(timeoutSpy).toHaveBeenCalledTimes(4);
+          expect(timeoutSpy).toHaveBeenCalledWith(expect.anything(), 100);
         });
       });
     });
 
     describe('options', () => {
       const error = new Error('error :(');
+
       beforeEach(() => {
         mockFunc.mockImplementation(() => {
           throw error;
         });
       });
-      describe('when', () => {
-        it('should retry until "when" function returns false', async () => {
-          const lessThanTwo = (res: number) => res < 2;
-          mockFunc.mockReturnValueOnce(0).mockReturnValueOnce(1).mockReturnValueOnce(2);
-          await withRetries(mockFunc, { when: lessThanTwo })();
-          expect(mockFunc).toHaveBeenCalledTimes(3);
-        });
-      });
 
-      describe('scope', () => {
-        it('should apply scope to provided function if passed in', async () => {
-          const scope = { func: jest.fn().mockName('scope.func') };
-          jest.spyOn(scope.func, 'apply').mockName('scope.func.apply');
-
-          await withRetries(scope.func, { scope })();
-
-          expect(scope.func.apply).toHaveBeenCalledTimes(1);
-          expect(scope.func.apply).toHaveBeenCalledWith(scope, []);
+      describe('attempts', () => {
+        describe('max', () => {
+          it('should call the given func the given number of max attempts', async () =>
+            await withRetries(mockFunc, { attempts: { max: 2 } })().catch(() => {
+              expect(mockFunc).toHaveBeenCalledTimes(2);
+            }));
         });
 
-        it('should NOT apply scope to provided function if not passed in', async () => {
-          const scope = { func: jest.fn().mockName('scope.func') };
-          jest.spyOn(scope.func, 'apply').mockName('scope.func.apply');
-
-          await withRetries(scope.func)();
-
-          expect(scope.func.apply).toHaveBeenCalledTimes(1);
-          expect(scope.func.apply).toHaveBeenCalledWith(undefined, []);
-        });
-      });
-
-      describe('delay', () => {
-        it('should call setTimeout with the specified delay', async () => {
-          const timeoutSpy = jest.spyOn(global, 'setTimeout');
-          await withRetries(mockFunc, { delay: 5 })().catch(() => {
-            expect(timeoutSpy).toHaveBeenCalledTimes(2);
-            expect(timeoutSpy).toHaveBeenCalledWith(expect.anything(), 5);
+        describe('when', () => {
+          it('should retry until "when" function returns false', async () => {
+            const lessThanTwo = (res: number) => res < 2;
+            mockFunc.mockReturnValueOnce(0).mockReturnValueOnce(1).mockReturnValueOnce(2);
+            await withRetries(mockFunc, { attempts: { when: lessThanTwo } })();
+            expect(mockFunc).toHaveBeenCalledTimes(3);
           });
         });
       });
 
-      describe('maxAttempts', () => {
-        it('should call the given func the given number of maxAttempts', async () =>
-          await withRetries(mockFunc, { maxAttempts: 2 })().catch(() => {
-            expect(mockFunc).toHaveBeenCalledTimes(2);
-          }));
+      describe('delay', () => {
+        describe('exponentialBackoff', () => {
+          it('should increase the delay exponentially', async () => {
+            const timeoutSpy = jest.spyOn(global, 'setTimeout');
+            await withRetries(mockFunc, {
+              delay: { initial: 1, jitter: false },
+            })().catch(() => {
+              expect(timeoutSpy.mock.calls[0][1]).toEqual(1);
+              expect(timeoutSpy.mock.calls[1][1]).toEqual(2);
+              expect(timeoutSpy.mock.calls[2][1]).toEqual(4);
+              expect(timeoutSpy.mock.calls[3][1]).toEqual(8);
+            });
+          });
+
+          it('should not use exponential backoff whens set to false', async () => {
+            const timeoutSpy = jest.spyOn(global, 'setTimeout');
+            await withRetries(mockFunc, {
+              delay: { exponentialBackoff: false },
+            })().catch(() => {
+              timeoutSpy.mock.calls.forEach((call) => {
+                expect(call[1]).toEqual(100);
+              });
+            });
+          });
+        });
+
+        describe('initial', () => {
+          it('should call setTimeout with the specified delay', async () => {
+            const timeoutSpy = jest.spyOn(global, 'setTimeout');
+            await withRetries(mockFunc, { delay: { initial: 5, jitter: false, exponentialBackoff: false } })().catch(
+              () => {
+                timeoutSpy.mock.calls.forEach((call) => {
+                  expect(call[1]).toEqual(5);
+                });
+              }
+            );
+          });
+        });
+
+        describe('jitter', () => {
+          it('should delay reinvokation randomly between 0 and the backoff value', async () => {
+            const timeoutSpy = jest.spyOn(global, 'setTimeout');
+            await withRetries(mockFunc, { attempts: { max: 10 }, delay: { initial: 2, jitter: false } })().catch(() => {
+              timeoutSpy.mock.calls.forEach((call, index) => {
+                expect(call[1]).toBeGreaterThanOrEqual(0);
+                expect(call[1]).toBeLessThanOrEqual(2 * 2 ** index);
+              });
+            });
+          });
+
+          it('should not jitter when jitter is set to false', async () => {
+            const timeoutSpy = jest.spyOn(global, 'setTimeout');
+            await withRetries(mockFunc, {
+              delay: { jitter: false },
+            })().catch(() => {
+              expect(timeoutSpy.mock.calls[0][1]).toEqual(100);
+              expect(timeoutSpy.mock.calls[1][1]).toEqual(200);
+              expect(timeoutSpy.mock.calls[2][1]).toEqual(400);
+              expect(timeoutSpy.mock.calls[3][1]).toEqual(800);
+            });
+          });
+        });
+
+        describe('max', () => {
+          it('should delay no longer than the max delay', async () => {
+            const timeoutSpy = jest.spyOn(global, 'setTimeout');
+            await withRetries(mockFunc, {
+              delay: { initial: 1, jitter: false, max: 4 },
+            })().catch(() => {
+              expect(timeoutSpy.mock.calls[0][1]).toEqual(1);
+              expect(timeoutSpy.mock.calls[1][1]).toEqual(2);
+              expect(timeoutSpy.mock.calls[2][1]).toEqual(4);
+              expect(timeoutSpy.mock.calls[3][1]).toEqual(4);
+            });
+          });
+        });
       });
 
       describe('errorHandler', () => {
@@ -129,6 +180,28 @@ describe('withRetries', () => {
           await expect(withRetries(mockFunc, { errorHandler })()).not.toReject();
           expect(errorHandler).toHaveBeenCalledTimes(1);
           expect(errorHandler).toHaveBeenCalledWith(error);
+        });
+      });
+
+      describe('scope', () => {
+        it('should apply scope to provided function if passed in', async () => {
+          const scope = { func: jest.fn().mockName('scope.func') };
+          jest.spyOn(scope.func, 'apply').mockName('scope.func.apply');
+
+          await withRetries(scope.func, { scope })();
+
+          expect(scope.func.apply).toHaveBeenCalledTimes(1);
+          expect(scope.func.apply).toHaveBeenCalledWith(scope, []);
+        });
+
+        it('should NOT apply scope to provided function if not passed in', async () => {
+          const scope = { func: jest.fn().mockName('scope.func') };
+          jest.spyOn(scope.func, 'apply').mockName('scope.func.apply');
+
+          await withRetries(scope.func)();
+
+          expect(scope.func.apply).toHaveBeenCalledTimes(1);
+          expect(scope.func.apply).toHaveBeenCalledWith(undefined, []);
         });
       });
     });

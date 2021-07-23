@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig-base.json",
   "compilerOptions": {
-    "module": "commonjs", // TODO why .default?
+    "module": "commonjs",
     "outDir": "dist/cjs",
     "target": "es2015"
   }
